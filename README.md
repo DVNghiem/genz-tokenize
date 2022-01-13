@@ -2,7 +2,7 @@
 
 ## install via pip (from PyPI):
 
-    pip install genz-tokenze
+    pip install genz-tokenize
 
 ## Using
 

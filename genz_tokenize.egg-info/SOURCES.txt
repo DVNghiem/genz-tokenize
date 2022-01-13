@@ -1,4 +1,6 @@
+LICENSE
 README.md
+pyproject.toml
 setup.py
 genz_tokenize/__init__.py
 genz_tokenize/tokenize.py
