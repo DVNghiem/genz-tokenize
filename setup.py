@@ -18,7 +18,7 @@ setup(
     description="Tokenize for vocab is created by subwod-nmt",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://medium-multiply.readthedocs.io/",
+    url="https://github.com/nghiemIUH/genz-tokenize",
     author="Van Nghiem",
     author_email="vannghiem848@gmail.com",
     license="MIT",
