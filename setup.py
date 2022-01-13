@@ -13,9 +13,9 @@ with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 
 # This call to setup() does all the work
 setup(
-    name="genz_tokenize",
-    version="0.1.0",
-    description="Tokenize for vocab is created by subwod-nmt",
+    name="genz-tokenize",
+    version="1.0.0",
+    description="""Tokenize for vocab is created by subwod-nmt""",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/nghiemIUH/genz-tokenize",
