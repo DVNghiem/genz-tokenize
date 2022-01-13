@@ -13,7 +13,7 @@ with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 
 # This call to setup() does all the work
 setup(
-    name="medium-multiply",
+    name="genz_tokenize",
     version="0.1.0",
     description="Tokenize for vocab is created by subwod-nmt",
     long_description=long_description,
@@ -33,6 +33,6 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent"
     ],
-    packages=["medium_multiply"],
+    packages=["genz_tokenize"],
     include_package_data=True,
 )

@@ -1,0 +1,31 @@
+Metadata-Version: 2.1
+Name: medium-multiply
+Version: 0.1.0
+Summary: Tokenize for vocab is created by subwod-nmt
+Home-page: https://github.com/nghiemIUH/genz-tokenize
+Author: Van Nghiem
+Author-email: vannghiem848@gmail.com
+License: MIT
+Description: # Genz Tokenize
+        
+        ## install via pip (from PyPI):
+        
+            pip install genz-tokenze
+        
+        ## Using
+        
+            from genz_tokenize import Tokenize
+            tokenize = Tokenize('vocab.txt', 'bpe.codes')
+            print(tokenize(['sinh_viên công_nghệ', 'hello'], maxlen = 10))
+        
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
