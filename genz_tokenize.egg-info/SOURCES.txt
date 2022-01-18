@@ -3,8 +3,12 @@ README.md
 pyproject.toml
 setup.py
 genz_tokenize/__init__.py
+genz_tokenize/requires.txt
 genz_tokenize/tokenize.py
 genz_tokenize.egg-info/PKG-INFO
 genz_tokenize.egg-info/SOURCES.txt
 genz_tokenize.egg-info/dependency_links.txt
+genz_tokenize.egg-info/requires.txt
 genz_tokenize.egg-info/top_level.txt
+genz_tokenize/data/bpe.codes
+genz_tokenize/data/vocab.txt

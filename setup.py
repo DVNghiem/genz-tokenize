@@ -11,11 +11,15 @@ HERE = path.abspath(path.dirname(__file__))
 with open(path.join(HERE, 'README.md'), 'r', encoding='utf-8') as f:
     long_description = f.read()
 
+
+with open(path.join(HERE, 'genz_tokenize', 'requires.txt'), 'r', encoding='utf-8') as f:
+    reqs = [i.strip() for i in f.readlines()]
+
 # This call to setup() does all the work
 setup(
     name="genz-tokenize",
-    version="1.0.1",
-    description="""Tokenize for vocab is created by subwod-nmt""",
+    version="1.0.6",
+    description="""Tokenize for subword""",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/nghiemIUH/genz-tokenize",
@@ -34,5 +38,8 @@ setup(
         "Operating System :: OS Independent"
     ],
     packages=["genz_tokenize"],
+    package_data={'genz_tokenize': [
+        'data/vocab.txt', 'data/bpe.codes', 'requires.txt']},
     include_package_data=True,
+    install_requires=reqs
 )
