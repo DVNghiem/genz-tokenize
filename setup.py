@@ -18,7 +18,7 @@ with open(path.join(HERE, 'genz_tokenize', 'requires.txt'), 'r', encoding='utf-8
 # This call to setup() does all the work
 setup(
     name="genz-tokenize",
-    version="1.0.7",
+    version="1.0.8",
     description="""Tokenize for subword""",
     long_description=long_description,
     long_description_content_type="text/markdown",
