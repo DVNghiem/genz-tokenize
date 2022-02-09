@@ -2,6 +2,7 @@ import re
 from typing import Any, Dict, List, Optional
 import os
 from transformers import PreTrainedTokenizer
+import numpy as np
 
 
 class Tokenize(object):
@@ -135,12 +136,15 @@ class Tokenize(object):
 
     def __call__(self, *args: Any, **kwds: Any) -> Dict:
         '''
-            sentences: string,
+            sentences: list string,
             maxlen: int,
             truncate: boolean, default True
             padding: boolean, default True
         '''
+
         sentences = args[0]
+        assert isinstance(sentences, np.ndarray) or isinstance(
+            sentences, list), "Sentences must be list or numpy array, args: sentences[list], maxlen[int]"
         maxlen = kwds['maxlen']
         truncate = kwds.get('truncate', True)
         padding = kwds.get('padding', True)
