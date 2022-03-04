@@ -11,4 +11,7 @@ genz_tokenize.egg-info/dependency_links.txt
 genz_tokenize.egg-info/requires.txt
 genz_tokenize.egg-info/top_level.txt
 genz_tokenize/data/bpe.codes
+genz_tokenize/data/emb_1.pkl
+genz_tokenize/data/emb_2.pkl
+genz_tokenize/data/emb_3.pkl
 genz_tokenize/data/vocab.txt

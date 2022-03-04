@@ -32,4 +32,11 @@
     >>> tokenize = TokenizeForBert.fromFile('vocab.txt','bpe.codes')
 ```
 
+## Embedding matrix
+
+```python
+    >>> from genz_tokenize import get_embedding_matrix
+    >>> embedding_matrix = get_embedding_matrix()
+```
+
 ### Có thể tạo vocab cho riêng mình bằng thư viện [subword-nmt (learn-joint-bpe-and-vocab)](https://github.com/rsennrich/subword-nmt)

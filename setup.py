@@ -18,7 +18,7 @@ with open(path.join(HERE, 'genz_tokenize', 'requires.txt'), 'r', encoding='utf-8
 # This call to setup() does all the work
 setup(
     name="genz-tokenize",
-    version="1.0.9",
+    version="1.1.0",
     description="""Tokenize for subword""",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -39,7 +39,8 @@ setup(
     ],
     packages=["genz_tokenize"],
     package_data={'genz_tokenize': [
-        'data/vocab.txt', 'data/bpe.codes', 'requires.txt']},
+        'data/vocab.txt', 'data/bpe.codes', 'requires.txt',
+        'data/emb_1.pkl', 'data/emb_2.pkl', 'data/emb_3.pkl']},
     include_package_data=True,
     install_requires=reqs
 )

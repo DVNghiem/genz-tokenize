@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 import os
 from transformers import PreTrainedTokenizer
 import numpy as np
+import pickle
 
 
 class Tokenize(object):
@@ -372,28 +373,12 @@ class TokenizeForBert(PreTrainedTokenizer):
         out_string = " ".join(tokens).replace("@@ ", "").strip()
         return out_string
 
-    def add_from_file(self, f):
-        """
-        Loads a pre-existing dictionary from a text file and adds its symbols to this instance.
-        """
-        if isinstance(f, str):
-            try:
-                with open(f, "r", encoding="utf-8") as fd:
-                    self.add_from_file(fd)
-            except FileNotFoundError as fnfe:
-                raise fnfe
-            except UnicodeError:
-                raise Exception(
-                    f"Incorrect encoding detected in {f}, please rebuild the dataset")
-            return
-
-        lines = f.readlines()
-        for lineTmp in lines:
-            line = lineTmp.strip()
-            idx = line.rfind(" ")
-            if idx == -1:
-                raise ValueError(
-                    "Incorrect dictionary format, expected '<token> <cnt>'")
+    def add_from_file(self, vocab_file):
+        with open(vocab_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            idx = line.rfind(' ')
             word = line[:idx]
             self.encoder[word] = len(self.encoder)
 
@@ -404,3 +389,15 @@ class TokenizeForBert(PreTrainedTokenizer):
         tokenize.bpe_file = bpe_file
         tokenize.__init__()
         return tokenize
+
+
+def get_embedding_matrix():
+    this_dir, _ = os.path.split(__file__)
+    with open(os.path.join(this_dir, 'data', 'emb_1.pkl'), 'rb') as f:
+        emb_1 = pickle.load(f)
+    with open(os.path.join(this_dir, 'data', 'emb_2.pkl'), 'rb') as f:
+        emb_2 = pickle.load(f)
+    with open(os.path.join(this_dir, 'data', 'emb_3.pkl'), 'rb') as f:
+        emb_3 = pickle.load(f)
+    embedding_matrix = np.vstack([emb_1, emb_2, emb_3])
+    return embedding_matrix
