@@ -215,7 +215,8 @@ class TokenizeForBert(PreTrainedTokenizer):
         self.encoder[self.pad_token] = 0
         self.encoder[self.bos_token] = 1
         self.encoder[self.eos_token] = 2
-        self.encoder[self.unk_token] = 3
+        self.encoder[self.mask_token] = 3
+        self.encoder[self.unk_token] = 4
 
         self.add_from_file(self.vocab_file)
 
