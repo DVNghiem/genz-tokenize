@@ -103,14 +103,21 @@ class Tokenize(object):
         word = word[:-4]
         return word
 
-    def __tokenize(self, text):
+    def __tokenize(self, text, return_offset):
         split_tokens = []
-
+        offset = [(0, 0)]
         words = re.findall(r"\S+\n?", text)  # tách từ ra
 
         for token in words:
             # kết nối các ký tự với nhau
-            split_tokens.extend([t for t in self.bpe(token).split(" ")])
+            tokens = [t for t in self.bpe(token).split(" ")]
+            if return_offset:
+                offset.append(
+                    (len(split_tokens)+1, len(split_tokens)+len(tokens)))
+            split_tokens.extend(tokens)
+        if return_offset:
+            offset.append((len(split_tokens)+1, len(split_tokens)+1))
+            return split_tokens, offset
         return split_tokens  # tách từ ra
 
     def __convert_token_to_ids(self, word):
@@ -119,45 +126,101 @@ class Tokenize(object):
     def __convert_token_to_string(self, token):
         return self.decoder.get(token, self.unk_token)
 
-    def encode(self, sentence) -> List[int]:
-        tokens = self.__tokenize(sentence)
-        tokens = [self.__convert_token_to_ids(i) for i in tokens]
-        return [self.encoder[self.bos_token]]+tokens+[self.encoder[self.eos_token]]
+    def encode(self, sentence, return_offset) -> List[int]:
+        tokens = self.__tokenize(sentence, return_offset)
+        if return_offset:
+            tokens, offset = tokens
+        result = []
+        for i in tokens:
+            result.append(self.__convert_token_to_ids(i))
+        if return_offset:
+            return [self.encoder[self.bos_token]]+result+[self.encoder[self.eos_token]], offset
+        return [self.encoder[self.bos_token]]+result+[self.encoder[self.eos_token]]
 
     def decode(self, token):
         sentence = [self.__convert_token_to_string(i) for i in token]
         return ' '.join(sentence).replace('@@ ', '')
 
-    def __padding(self, token, maxlen, truncate):
-        if len(token) < maxlen:
-            return token+[self.encoder[self.pad_token]]*(maxlen-len(token))
-        if truncate:
-            return token[:maxlen-1]+[self.encoder[self.eos_token]]
+    def __padding(self, token, max_len, truncation):
+        if len(token) < max_len:
+            return token+[self.encoder[self.pad_token]]*(max_len-len(token))
+        if truncation:
+            return token[:max_len-1]+[self.encoder[self.eos_token]]
         return token
 
-    def __call__(self, *args: Any, **kwds: Any) -> Dict:
-        '''
-            sentences: list string,
-            maxlen: int,
-            truncate: boolean, default True
-            padding: boolean, default True
-        '''
+    def get_atttention_mask(self, token):
+        mask = []
+        for i in token:
+            mask.append(1 if i != self.encoder[self.pad_token] else 0)
+        return mask
 
-        sentences = args[0]
-        assert isinstance(sentences, np.ndarray) or isinstance(
-            sentences, list), "Sentences must be list or numpy array, args: sentences[list], maxlen[int]"
-        maxlen = kwds['maxlen']
-        truncate = kwds.get('truncate', True)
-        padding = kwds.get('padding', True)
-        input_ids = []
-        for i in sentences:
-            token = self.encode(i)
-            if padding:
-                token = self.__padding(token, maxlen, truncate)
-            input_ids.append(token)
-        return input_ids
+    def get_token_type(self, token):
+        return [0]*len(token)
 
-    @classmethod
+    def get_sequence_id(self, token):
+        eos = self.encoder[self.eos_token]
+        bos = self.encoder[self.bos_token]
+
+        seq_id = []
+        for i in token:
+            if i == eos:
+                seq_id.append(None)
+                break
+            else:
+                seq_id.append(None if i == bos else 0)
+
+        for i in range(len(seq_id), len(token), 1):
+            if token[i] == eos:
+                seq_id.append(None)
+                if seq_id[i-1] == 1:
+                    break
+            else:
+                seq_id.append(1)
+        return seq_id
+
+    def __call__(self,
+                 text: str,
+                 pair_text: str = None,
+                 max_len: int = None,
+                 padding: bool = None,
+                 truncation: bool = False,
+                 return_offset: bool = False) -> Dict:
+        result = {}
+        text = self.encode(text, return_offset)
+        tokens = []
+        if pair_text is not None:
+            if return_offset:
+                offset = []
+                pair_text = self.encode(pair_text, return_offset=True)
+                tokens.extend(text[0])
+                tokens.extend([self.encoder[self.eos_token]
+                               ]+pair_text[0][1:])
+                offset.extend(text[1])
+                offset.extend([(i+len(text[1]), j+len(text[1]))
+                              for i, j in pair_text[1]])
+                result['offset'] = offset
+
+            else:
+                tokens.extend(text)
+                tokens.append(self.encoder[self.eos_token])
+                tokens.extend(self.encode(pair_text, return_offset=False)[1:])
+        else:
+            if return_offset:
+                tokens = text[0]
+                offset = text[1]
+                result['offset'] = offset
+            else:
+                tokens = text
+        if max_len is not None and padding:
+            tokens = self.__padding(
+                tokens, max_len=max_len, truncation=truncation)
+        result['input_ids'] = tokens
+        result['attention_mask'] = self.get_atttention_mask(tokens)
+        if pair_text is not None:
+            result['sequence_id'] = self.get_sequence_id(tokens)
+        return result
+
+    @ classmethod
     def fromFile(cls, vocab_file, bpe_file):
         tokenize = cls()
         tokenize.vocab_file = vocab_file
@@ -299,7 +362,7 @@ class TokenizeForBert(PreTrainedTokenizer):
             return len(cls + token_ids_0 + sep) * [0]
         return len(cls + token_ids_0 + sep + sep + token_ids_1 + sep) * [0]
 
-    @property
+    @ property
     def vocab_size(self):
         return len(self.encoder)
 
@@ -383,7 +446,7 @@ class TokenizeForBert(PreTrainedTokenizer):
             word = line[:idx]
             self.encoder[word] = len(self.encoder)
 
-    @classmethod
+    @ classmethod
     def fromFile(cls, vocab_file, bpe_file):
         tokenize = cls()
         tokenize.vocab_file = vocab_file

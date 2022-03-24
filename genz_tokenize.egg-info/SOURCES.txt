@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 setup.py
 genz_tokenize/__init__.py
+genz_tokenize/preprocess.py
 genz_tokenize/requires.txt
 genz_tokenize/tokenize.py
 genz_tokenize.egg-info/PKG-INFO

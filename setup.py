@@ -18,8 +18,8 @@ with open(path.join(HERE, 'genz_tokenize', 'requires.txt'), 'r', encoding='utf-8
 # This call to setup() does all the work
 setup(
     name="genz-tokenize",
-    version="1.1.3",
-    description="""Tokenize for subword""",
+    version="1.1.5",
+    description="""Vietnamese tokenization, preprocess and models NLP""",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/nghiemIUH/genz-tokenize",
