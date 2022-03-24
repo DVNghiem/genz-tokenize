@@ -16,8 +16,9 @@ class EncoderSeq2Seq(tf.keras.layers.Layer):
                                        recurrent_initializer='glorot_uniform')
 
     def call(self, x, hidden):
-        x = self.embedding(x)
-        output, state = self.gru(x, initial_state=hidden)
+        # x shape bs, maxlen
+        x = self.embedding(x)  # bs, maxlen, d_model
+        output, state = self.gru(x, initial_state=hidden)  # bs, maxlen, units
         return output, state
 
 
@@ -63,11 +64,11 @@ class DecoderSeq2Seq(tf.keras.layers.Layer):
 
     def call(self, x, hidden, enc_output):
         context_vector = self.attention(hidden, enc_output)
-        x = self.embedding(x)
+        x = self.embedding(x)  # bs, 1, d_model
         x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
 
-        output, state = self.gru(x)
-        output = tf.reshape(output, (-1, output.shape[2]))
+        output, state = self.gru(x)   # bs, 1, units
+        output = tf.reshape(output, (-1, output.shape[2]))  # bs, units
         x = self.fc(output)
         return x, state
 

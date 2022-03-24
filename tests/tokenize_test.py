@@ -1,8 +1,8 @@
 from genz_tokenize import Tokenize, TokenizeForBert, get_embedding_matrix
 from genz_tokenize.preprocess import remove_emoji
-from genz_tokenize.models.utils import Config
+from genz_tokenize.utils import Config
 from genz_tokenize.models import Seq2Seq, Transformer, TransformerClassification
-from genz_tokenize.models.training import TrainArgument, Trainer
+from genz_tokenize.training import TrainArgument, Trainer
 
 import tensorflow as tf
 
@@ -36,6 +36,6 @@ dataset_eval = dataset_eval.prefetch(tf.data.experimental.AUTOTUNE)
 args = TrainArgument(batch_size=2, epochs=2)
 trainer = Trainer(model=model, args=args,
                   data_train=dataset_train, data_eval=dataset_eval)
-trainer.train('model/epochs_1')
+# trainer.train('model/epochs_1')
 # trainer.save('model')
 # print(model.predict(x).shape)

@@ -78,6 +78,7 @@ class Seq2Seq(tf.keras.Model):
             predictions, hidden = self.decoder(dec_input,
                                                hidden,
                                                enc_out)
+
             predicted_id = tf.argmax(predictions, axis=-1).numpy()
             result[:, i] = predicted_id
             dec_input = tf.expand_dims(predicted_id, -1)
