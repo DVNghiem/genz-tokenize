@@ -1,3 +1,5 @@
 venv
 dist/*
 model
+src/genz_tokenize.egg-info
+checkpoint

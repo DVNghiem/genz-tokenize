@@ -112,16 +112,14 @@ class Transformer(tf.keras.Model):
     def create_masks(self, inp, tar):
         # Encoder padding mask
         enc_padding_mask = create_padding_mask(inp)
-
         dec_padding_mask = create_padding_mask(inp)
-
         look_ahead_mask = create_look_ahead_mask(tf.shape(tar)[1])
         dec_target_padding_mask = create_padding_mask(tar)
         combined_mask = tf.maximum(dec_target_padding_mask, look_ahead_mask)
         return enc_padding_mask, combined_mask, dec_padding_mask
 
     def compile(self, loss, optimizer):
-        super().compile()
+        super(Transformer, self).compile()
         self.loss = loss
         self.optimizer = optimizer
         self.acc = tf.keras.metrics.SparseCategoricalAccuracy(

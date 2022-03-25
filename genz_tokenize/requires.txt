@@ -1,3 +1,0 @@
-numpy
-transformers==4.15.0
-tensorflow

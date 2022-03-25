@@ -49,9 +49,9 @@
 ## Trainer
 
 ```python
-    >>> from genz_tokenize.utils import Config
-    >>> from genz_tokenize.models import Seq2Seq
-    >>> from genz_tokenize.training import TrainArgument, Trainer
+    >>> from genz_tokenize.models.utils import Config
+    >>> from genz_tokenize.models import Seq2Seq, Transformer, TransformerClassification
+    >>> from genz_tokenize.models.training import TrainArgument, Trainer
     # create config hyper parameter
     >>> config = Config()
     >>> config.vocab_size = 100

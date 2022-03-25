@@ -1,4 +1,5 @@
-from setuptools import setup, find_packages
+from setuptools import setup
+import setuptools
 
 # To use a consistent encoding
 from codecs import open
@@ -12,13 +13,16 @@ with open(path.join(HERE, 'README.md'), 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 
-with open(path.join(HERE, 'genz_tokenize', 'requires.txt'), 'r', encoding='utf-8') as f:
-    reqs = [i.strip() for i in f.readlines()]
+reqs = [
+    'numpy',
+    'transformers',
+    'tensorflow',
+]
 
-# This call to setup() does all the work
+
 setup(
     name="genz-tokenize",
-    version="1.1.7",
+    version="1.1.8",
     description="""Vietnamese tokenization, preprocess and models NLP""",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -29,18 +33,14 @@ setup(
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent"
     ],
-    packages=["genz_tokenize"],
-    package_data={'genz_tokenize': [
-        'data/vocab.txt', 'data/bpe.codes', 'requires.txt',
-        'data/emb_1.pkl', 'data/emb_2.pkl', 'data/emb_3.pkl']},
+    install_requires=reqs,
+    package_dir={"": "src"},
+    packages=setuptools.find_packages(where="src"),
+    python_requires=">=3.7",
+    package_data={'genz_tokenize': ['data/*']},
     include_package_data=True,
-    install_requires=reqs
+
 )

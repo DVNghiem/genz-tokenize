@@ -41,15 +41,15 @@ class Config:
 
 
 class CallbackSave(tf.keras.callbacks.Callback):
-    def __init__(self, model_dir: str, save_per_epochs: int = 1) -> None:
+    def __init__(self, ckpt_manager: tf.train.CheckpointManager, save_per_epochs: int = 1) -> None:
         super().__init__()
-        self.model_dir = model_dir
+        self.ckpt_manager = ckpt_manager
         self.save_per_epochs = save_per_epochs
 
     def on_epoch_end(self, epochs, logs=None):
+
         if epochs % self.save_per_epochs == 0:
-            self.model.save_weights(os.path.join(
-                self.model_dir, 'epochs_%s' % epochs))
+            ckpt_save_path = self.ckpt_manager.save()
 
 
 def get_initial_params(config: Config):

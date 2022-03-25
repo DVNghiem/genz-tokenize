@@ -18,12 +18,12 @@ class TrainArgument:
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.save_per_epochs = save_per_epochs
+        self.max_keep = 1
 
 
 class Trainer:
     '''
     This Trainer class help training easier
-
     ```python
     >>> from genz_tokenize.utils import Config
     >>> from genz_tokenize.models import Seq2Seq
@@ -79,23 +79,27 @@ class Trainer:
             raise Exception(
                 'Model type must be seq2seq, transformer or transformer_cls')
 
-    def train(self, model_dir: str = '') -> None:
+        self.model.compile(loss=self.loss_fn, optimizer=self.optimizer)
+        self.checkpoint = tf.train.Checkpoint(
+            model=self.model, optimizer=self.optimizer)
+        self.ckpt_manager = tf.train.CheckpointManager(
+            self.checkpoint, args.model_dir, max_to_keep=args.max_keep)
+
+    def train(self) -> None:
         '''
             compile and train model
         '''
-        self.model.compile(loss=self.loss_fn, optimizer=self.optimizer)
-        if model_dir != '':
-            self.model.load_weights(model_dir)
+        if self.ckpt_manager.latest_checkpoint:
+            self.checkpoint.restore(self.ckpt_manager.latest_checkpoint)
+            print('\nLatest checkpoint restored!!!\n')
 
         self.model.fit(self.data_train,
                        epochs=self.args.epochs,
                        validation_data=self.data_eval,
                        callbacks=[
-                           CallbackSave(self.args.model_dir,
+                           CallbackSave(self.ckpt_manager,
                                         self.args.save_per_epochs)
                        ])
 
-    def save(self, model_dir: str = '') -> None:
-        if model_dir == '':
-            raise Exception('model directory not empty')
-        self.model.save_weights(os.path.join(model_dir, 'final'))
+    def save(self) -> None:
+        self.ckpt_manager.save()
