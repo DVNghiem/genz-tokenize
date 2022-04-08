@@ -22,7 +22,7 @@ reqs = [
 
 setup(
     name="genz-tokenize",
-    version="1.1.8",
+    version="1.1.9",
     description="""Vietnamese tokenization, preprocess and models NLP""",
     long_description=long_description,
     long_description_content_type="text/markdown",
