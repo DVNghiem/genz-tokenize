@@ -3,3 +3,4 @@ dist/
 model
 genz_tokenize.egg-info
 checkpoint
+build/
