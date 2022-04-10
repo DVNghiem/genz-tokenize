@@ -1,5 +1,5 @@
 venv
-dist/*
+dist/
 model
-src/genz_tokenize.egg-info
+genz_tokenize.egg-info
 checkpoint

@@ -1,7 +1,5 @@
 from genz_tokenize.models.bert.distilbert import DistilBertConfig, DistilBertSeqClassification
 from genz_tokenize.models.bert.training import TrainArg, Trainner
-import genz_tokenize.models.bert.distilbert._config
-
 import tensorflow as tf
 
 x = tf.zeros(shape=(10, 10), dtype=tf.int32)

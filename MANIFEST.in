@@ -1,0 +1,4 @@
+include requirements.txt
+include LICENSE
+recursive-include genz_tokenize *
+recursive-exclude * __pycache__
