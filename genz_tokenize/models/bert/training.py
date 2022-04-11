@@ -1,4 +1,4 @@
-from .model_utils import PretrainModel, LossClassification
+from .model_utils import PretrainModel, LossClassification, load_checkpoint, save_checkpoint
 import tensorflow as tf
 
 
@@ -7,12 +7,14 @@ class TrainArg:
         self,
         epochs: int = 10,
         batch_size: int = 32,
-        learning_rate: float = 1e-4
+        learning_rate: float = 1e-4,
+        checkpoint_dir: str = 'checkpoint'
 
     ) -> None:
         self.epochs = epochs
         self.batch_size = batch_size
         self.learning_rate = learning_rate
+        self.checkpoint_dir = checkpoint_dir
 
 
 class Trainner:
@@ -37,5 +39,9 @@ class Trainner:
         self.model.compile(loss=self.loss, optimizer=self.optimizer)
 
     def train(self) -> None:
+        load_checkpoint(self.model, optimizer=self.model.optimizer,
+                        checkpoint_dir=self.arg.checkpoint_dir)
         self.model.fit(self.dataset_train, epochs=self.arg.epochs,
                        validation_data=self.dataset_val)
+        save_checkpoint(self.model, optimizer=self.model.optimizer,
+                        checkpoint_dir=self.arg.checkpoint_dir)

@@ -1,1 +1,1 @@
-from . import test_bert, tokenize_test
+from . import test_bert, test_tokenizer

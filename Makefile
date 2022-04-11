@@ -6,6 +6,7 @@ clean: clean-build clean-pyc clean-test dist ## remove all build, test, coverage
 clean-build: ## remove build artifacts
 	rm -fr build/
 	rm -fr dist/
+	rm -fr checkpoint/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +

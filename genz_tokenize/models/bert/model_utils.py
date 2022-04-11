@@ -1,46 +1,56 @@
 import tensorflow as tf
+import os
+import json
+
+
+class Config:
+    def saveJson(self, path):
+        if not os.path.exists(path=path):
+            os.mkdir(path=path)
+        with open(os.path.join(path, 'config.json'), 'w') as f:
+            json.dump(self.__dict__, f)
+
+    @classmethod
+    def fromJson(cls, path):
+        if not os.path.exists(path):
+            raise Exception(f'{os.path.join(path, "config.json")} not found')
+        with open(os.path.join(path, 'config.json'), 'r') as f:
+            data = json.load(f)
+        for k, v in data.items():
+            setattr(cls, k, v)
+        return cls
+
+
+def save_checkpoint(model, optimizer: tf.keras.optimizers.Optimizer = None, checkpoint_dir: str = None):
+    checkpoint = tf.train.Checkpoint(
+        model=model, optimizer=optimizer)
+    ckpt_manager = tf.train.CheckpointManager(
+        checkpoint, checkpoint_dir, max_to_keep=5)
+    ckpt_manager.save()
+
+
+def load_checkpoint(model, optimizer: tf.keras.optimizers.Optimizer = None, checkpoint_dir: str = None):
+    if optimizer:
+        checkpoint = tf.train.Checkpoint(
+            model=model,  optimizer=optimizer)
+    else:
+        checkpoint = tf.train.Checkpoint(
+            model=model,  optimizer=optimizer)
+    ckpt_manager = tf.train.CheckpointManager(
+        checkpoint, checkpoint_dir, max_to_keep=5)
+    if ckpt_manager.latest_checkpoint:
+        checkpoint.restore(ckpt_manager.latest_checkpoint)
+        print('\nLatest checkpoint restored!!!\n')
 
 
 class PretrainModel(tf.keras.Model):
     def __init__(self) -> None:
         super().__init__()
-        self.optimizer = None
-        self.loss = None
-
-    def save_checkpoint(self, checkpoint_dir, save_optimizer=False):
-        if save_optimizer:
-            checkpoint = tf.train.Checkpoint(
-                model=self, optimizer=self.optimizer)
-        else:
-            checkpoint = tf.train.Checkpoint(
-                model=self.model)
-        ckpt_manager = tf.train.CheckpointManager(
-            checkpoint, checkpoint_dir, max_to_keep=5)
-        ckpt_manager.save()
-
-    def load_checkpoint(self, checkpoint_dir, save_optimizer=False):
-        if save_optimizer:
-            if self.optimizer is not None:
-                checkpoint = tf.train.Checkpoint(
-                    model=self, optimizer=self.optimizer)
-            else:
-                raise Exception(
-                    'you must compile before load checkpoint with option save_potimizer = True')
-        else:
-            checkpoint = tf.train.Checkpoint(
-                model=self)
-
-        ckpt_manager = tf.train.CheckpointManager(
-            checkpoint, checkpoint_dir, max_to_keep=5)
-
-        if ckpt_manager.latest_checkpoint:
-            checkpoint.restore(ckpt_manager.latest_checkpoint)
-            print('\nLatest checkpoint restored!!!\n')
 
     @classmethod
-    def fromPretrain(cls, config, checkpoint_dir, save_optimizer=False):
+    def fromPretrain(cls, config: Config, checkpoint_dir):
         model = cls(config)
-        model.load_checkpoint(checkpoint_dir, save_optimizer)
+        load_checkpoint(model, optimizer=None, checkpoint_dir=checkpoint_dir)
         return model
 
     def compile(self, loss, optimizer, metrics=None, **kwargs):

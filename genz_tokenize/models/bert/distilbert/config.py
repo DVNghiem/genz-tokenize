@@ -1,5 +1,7 @@
+from genz_tokenize.models.bert.model_utils import Config
 
-class DistilBertConfig:
+
+class DistilBertConfig(Config):
     def __init__(
         self,
         vocab_size=33333,

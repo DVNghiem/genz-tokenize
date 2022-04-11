@@ -13,12 +13,6 @@ with open(path.join(HERE, 'genz_tokenize', 'VERSION'), 'r') as f:
 with open(path.join(HERE, 'requirements.txt'), 'r') as f:
     install_requires = f.read().split('\n')[:-1]
 
-# install_requires = [
-#     'numpy',
-#     'transformers',
-#     'tensorflow',
-# ]
-
 setup(
     name="genz-tokenize",
     version=version,
