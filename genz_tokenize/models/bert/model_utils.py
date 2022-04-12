@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python.keras.engine import data_adapter
 import os
 import json
 
@@ -60,6 +61,8 @@ class PretrainModel(tf.keras.Model):
             metrics=metrics,
             **kwargs
         )
+        self.train_loss_metric = tf.keras.metrics.Mean()
+        self.val_loss_metric = tf.keras.metrics.Mean()
 
     @property
     def metrics(self):
@@ -70,21 +73,24 @@ class PretrainModel(tf.keras.Model):
             self.val_acc_metric
         ]
 
-    def call(self, input_ids=None, attention_mask=None, token_type_ids=None, training=False):
+    def call(
+            self,
+            input_ids=None,
+            attention_mask=None,
+            token_type_ids=None,
+            dec_input_ids=None,
+            dec_attention_mask=None,
+            dec_token_type_id=None,
+            training=False
+    ):
         raise NotImplementedError
 
     def train_step(self, data):
-        inputs = {
-            'input_ids': data[0],
-            'attention_mask': data[1],
-            'token_type_ids': None if len(data) == 3 else data[2],
-            'training': True
-        }
-
-        y = data[-1]
+        inputs, y, _ = data_adapter.unpack_x_y_sample_weight(data)
+        inputs['training'] = True
         with tf.GradientTape() as tape:
             predicts = self(**inputs)
-            loss = self.loss.compute_loss(y, predicts)
+            loss = self.loss(y, predicts)
         self.optimizer.minimize(loss, self.trainable_variables, tape=tape)
         self.train_loss_metric(loss)
         self.train_acc_metric.update_state(y, predicts)
@@ -94,9 +100,10 @@ class PretrainModel(tf.keras.Model):
         }
 
     def test_step(self, data):
-        x, y = data
-        predicts = self(x, training=False)
-        loss = self.loss.compute_loss(y, predicts)
+        inputs, y, _ = data_adapter.unpack_x_y_sample_weight(data)
+        inputs['training'] = False
+        predicts = self(**inputs)
+        loss = self.loss(y, predicts)
         self.val_loss_metric(loss)
         self.val_acc_metric.update_state(y, predicts)
         return {
@@ -108,22 +115,25 @@ class PretrainModel(tf.keras.Model):
         raise NotImplementedError
 
 
-class LossQA:
+class LossQA(tf.keras.losses.Loss):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
-    def compute_loss(self, y, predict):
+    def call(self, y, predict):
         loss_obj = tf.keras.losses.SparseCategoricalCrossentropy(
             from_logits=True,
             reduction='none',
-            name='loss QA'
         )
         loss_start = loss_obj(y[:, 0:1], predict[0])
         loss_end = loss_obj(y[:, 1:], predict[1])
         return (loss_start+loss_end)/2
 
 
-class LossSeq2Seq:
+class LossSeq2Seq(tf.keras.losses.Loss):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
-    def compute_loss(self, y, predict):
+    def call(self, y, predict):
         loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
             from_logits=True, reduction='none')
         mask = tf.math.logical_not(tf.math.equal(y, 0))
@@ -133,9 +143,41 @@ class LossSeq2Seq:
         return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
 
 
-class LossClassification:
+class LossClassification(tf.keras.losses.Loss):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
-    def compute_loss(self, y, predict):
+    def call(self, y, predict):
         loss_obj = tf.keras.losses.CategoricalCrossentropy()
         loss = loss_obj(y, predict)
         return loss
+
+
+class QAMetricAccuracy(tf.keras.metrics.Metric):
+    def __init__(self, name='qa_metric', logits=False, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.acc = self.add_weight(name='acc', initializer='zeros')
+        self.logits = logits
+
+    def update_state(self, y_true, y_pred):
+        start = y_pred[0]
+        end = y_pred[1]
+        if self.logits:
+            start = tf.nn.softmax(start, axis=1)
+            end = tf.nn.softmax(end, axis=1)
+        start = tf.argmax(start, axis=1)
+        end = tf.argmax(end, axis=1)
+        y_true = tf.cast(y_true, dtype=start.dtype)
+        acc = (tf.cast(tf.equal(
+            y_true[:, 0], start), dtype=tf.float32)
+            +
+            tf.cast(
+                tf.equal(y_true[:, 1], end), dtype=tf.float32))/2
+        append_prev = tf.convert_to_tensor([tf.reduce_mean(acc), self.acc])
+        self.acc.assign(tf.reduce_mean(append_prev))
+
+    def result(self):
+        return self.acc
+
+    def reset_state(self):
+        self.acc.assign(0.)

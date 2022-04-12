@@ -1,10 +1,11 @@
-from genz_tokenize.models.bert.distilbert import DistilBertConfig, DistilBertSeqClassification
+from genz_tokenize.models.bert import DataCollection
+from genz_tokenize.models.bert.distilbert import DistilBertConfig, DistilBertSeqClassification, DistilBertQAPair, DistilBertQAEncoderDecoder
 from genz_tokenize.models.bert.training import TrainArg, Trainner
 import tensorflow as tf
 
 x = tf.zeros(shape=(10, 10), dtype=tf.int32)
 mask = tf.zeros(shape=(10, 10), dtype=tf.int32)
-y = tf.zeros(shape=(10, 5), dtype=tf.int32)
+y = tf.zeros(shape=(10, 2), dtype=tf.int32)
 
 dataset_train = tf.data.Dataset.from_tensor_slices((x, mask, y))
 dataset_train = dataset_train.batch(2)
@@ -22,9 +23,17 @@ config.dim = 10
 config.hidden_dim = 5
 config.num_labels = 5
 
-model = DistilBertSeqClassification(config)
-arg = TrainArg(epochs=2, batch_size=2, learning_rate=1e-2)
-trainer = Trainner(model, arg, dataset_train)
-trainer.train()
+dataset = DataCollection(
+    input_ids=x,
+    attention_mask=mask,
+    dec_input_ids=x,
+    dec_attention_mask=mask,
+    y=y
+)
 
-print('oke')
+tf_dataset = dataset.to_tf_dataset(batch_size=2)
+
+model = DistilBertQAEncoderDecoder(config)
+arg = TrainArg(epochs=2, batch_size=2, learning_rate=1e-2)
+trainer = Trainner(model, arg, tf_dataset)
+trainer.train()

@@ -1,6 +1,6 @@
 from genz_tokenize.models.bert.distilbert.config import DistilBertConfig
 from genz_tokenize.models.bert.distilbert.layers import DistilDecoderLayer, DistilEncoder, DistilDecoder, DistilEncoderLayer
-from genz_tokenize.models.bert.distilbert.models import DistilBertSeqClassification
+from genz_tokenize.models.bert.distilbert.models import DistilBertSeqClassification, DistilBertQAPair, DistilBertQAEncoderDecoder
 
 __all__ = [
     'DistilBertConfig',
@@ -8,5 +8,7 @@ __all__ = [
     'DistilEncoder',
     'DistilDecoder',
     'DistilEncoderLayer',
-    'DistilBertSeqClassification'
+    'DistilBertSeqClassification',
+    'DistilBertQAPair',
+    'DistilBertQAEncoderDecoder'
 ]

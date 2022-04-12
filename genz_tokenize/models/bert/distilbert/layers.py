@@ -96,7 +96,7 @@ class MultiHeadSelfAttention(tf.keras.layers.Layer):
 
         def create_look_ahead_mask(size):
             mask = 1 - tf.linalg.band_part(tf.ones((size, size)), -1, 0)
-            return mask
+            return tf.cast(mask, tf.int32)
 
         def shape(x):
             """separate heads"""
@@ -119,11 +119,10 @@ class MultiHeadSelfAttention(tf.keras.layers.Layer):
         # (bs, num_attention_heads, q_length, k_length)
         scores = tf.matmul(q, k, transpose_b=True)
 
+        mask = tf.reshape(mask, shape=(bs, 1, 1, -1))
         if self.is_look_mask:
             look_mask = create_look_ahead_mask(q_length)
             mask = tf.maximum(mask, look_mask)
-        else:
-            mask = tf.reshape(mask, shape=(bs, 1, 1, -1))
 
         # scores.masked_fill_(mask, -float('inf'))            # (bs, num_attention_heads, q_length, k_length)
         mask = tf.cast(mask, dtype=scores.dtype)
@@ -206,7 +205,7 @@ class DistilDecoderLayer(tf.keras.layers.Layer):
     def __init__(self, config: DistilBertConfig, **kwargs):
         super().__init__(**kwargs)
 
-        self.num_attention_heads = config.num_attentionum_attention_heads
+        self.num_attention_heads = config.num_attention_heads
         self.dim = config.dim
         self.hidden_dim = config.hidden_dim
         self.dropout = tf.keras.layers.Dropout(config.dropout)
@@ -246,7 +245,7 @@ class DistilDecoderLayer(tf.keras.layers.Layer):
         look = self.looking_attention(
             x, x, x, mask=attn_mask, training=training)
 
-        norm = self.layerNorm(look+x)
+        norm = self.layerNorm1(look+x)
 
         attention = self.attention(
             norm, encoder_hidden_state, encoder_hidden_state, mask=attn_mask, training=training)

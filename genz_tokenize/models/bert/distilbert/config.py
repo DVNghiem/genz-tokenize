@@ -15,7 +15,7 @@ class DistilBertConfig(Config):
         attention_dropout=0.2,
         epsilon=1e-6,
         dim=1024,
-        initial_range=0.02
+        initial_range=0.02,
     ) -> None:
         self.vocab_size = vocab_size
         self.hidden_dim = hidden_dim

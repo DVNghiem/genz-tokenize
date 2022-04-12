@@ -1,4 +1,5 @@
-from .model_utils import PretrainModel, LossClassification, load_checkpoint, save_checkpoint
+from .model_utils import PretrainModel, LossClassification, LossQA,\
+    load_checkpoint, save_checkpoint
 import tensorflow as tf
 
 
@@ -31,8 +32,11 @@ class Trainner:
         self.dataset_val = dataset_val
         self.arg = arg
 
-        if self.model.__str__() == 'cls':
+        if self.model.type == 'cls':
             self.loss = LossClassification()
+        elif self.model.type in ['QA', 'QA_ed']:
+            self.loss = LossQA()
+
         self.optimizer = tf.keras.optimizers.Adam(
             learning_rate=self.arg.learning_rate)
 
