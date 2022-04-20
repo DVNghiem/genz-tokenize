@@ -3,6 +3,7 @@ from genz_tokenize.models.bert.distilbert import DistilBertConfig, DistilBertSeq
 from genz_tokenize.models.bert.training import TrainArg, Trainner
 from genz_tokenize.models.bert.roberta import RoBertaClassification, RobertaConfig, RoBertaQAPair, RoBertaQAEncoderDecoder
 import tensorflow as tf
+from genz_tokenize.preprocess import remove_punctuations,  convert_unicode, remove_emoji, vncore_tokenize
 
 x = tf.zeros(shape=(10, 10), dtype=tf.int32)
 mask = tf.zeros(shape=(10, 10), dtype=tf.int32)

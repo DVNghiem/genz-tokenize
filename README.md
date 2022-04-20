@@ -4,7 +4,7 @@
 
     pip install genz-tokenize
 
-## Using for tokenize basic
+## Using for tokenize
 
 ```python
     >>> from genz_tokenize import Tokenize
@@ -20,7 +20,7 @@
     >>> tokenize = Tokenize.fromFile('vocab.txt','bpe.codes')
 ```
 
-## Using bert tokenize inheritance from PreTrainedTokenizer [transformers](https://github.com/huggingface/transformers)
+## Using bert tokenize inheritance from PreTrainedTokenizer [Transformers](https://github.com/huggingface/transformers)
 
 ```python
     >>> from genz_tokenize import TokenizeForBert
@@ -40,18 +40,26 @@
     >>> embedding_matrix = get_embedding_matrix()
 ```
 
+## Preprocessing data
+
+```python
+    >>> from genz_tokenize.preprocess import remove_punctuations,  convert_unicode, remove_emoji, vncore_tokenize
+
+```
+
 ## Model
 
     1. Seq2Seq with Bahdanau Attention
     2. Transformer classification
     3. Transformer
+    4. BERT
 
 ## Trainer
 
 ```python
-    >>> from genz_tokenize.models.utils import Config
-    >>> from genz_tokenize.models import Seq2Seq, Transformer, TransformerClassification
-    >>> from genz_tokenize.models.training import TrainArgument, Trainer
+    >>> from genz_tokenize.base_model.utils import Config
+    >>> from genz_tokenize.base_model.models import Seq2Seq, Transformer, TransformerClassification
+    >>> from genz_tokenize.base_model.training import TrainArgument, Trainer
     # create config hyper parameter
     >>> config = Config()
     >>> config.vocab_size = 100
@@ -74,4 +82,32 @@
     >>> trainer.train()
 ```
 
-### [Create your vocab](https://github.com/rsennrich/subword-nmt)
+```python
+    >>> from genz_tokenize.models.bert import DataCollection
+    >>> from genz_tokenize.models.bert.training import TrainArg, Trainner
+    >>> from genz_tokenize.models.bert.roberta import RoBertaClassification, RobertaConfig
+    >>> import tensorflow as tf
+
+    >>> x = tf.zeros(shape=(10, 10), dtype=tf.int32)
+    >>> mask = tf.zeros(shape=(10, 10), dtype=tf.int32)
+    >>> y = tf.zeros(shape=(10, 2), dtype=tf.int32)
+
+    >>> dataset = DataCollection(
+                    input_ids=x,
+                    attention_mask=mask,
+                    token_type_ids=None,
+                    dec_input_ids=None,
+                    dec_attention_mask=None,
+                    dec_token_type_ids=None,
+                    y=y
+                )
+    >>> tf_dataset = dataset.to_tf_dataset(batch_size=2)
+
+    >>> config = RobertaConfig()
+    >>> config.num_class = 2
+    >>> model = RoBertaQAEncoderDecoder(config)
+    >>> arg = TrainArg(epochs=2, batch_size=2, learning_rate=1e-2)
+    >>> trainer = Trainner(model, arg, tf_dataset)
+    >>> trainer.train()
+
+```
