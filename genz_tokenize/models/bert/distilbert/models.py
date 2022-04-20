@@ -30,7 +30,7 @@ class DistilBertSeqClassification(PretrainModel):
         token_type_ids=None,
         dec_input_ids=None,
         dec_attention_mask=None,
-        dec_token_type_id=None,
+        dec_token_type_ids=None,
         training=False
     ):
         embedding = self.embedding(input_ids=input_ids)
@@ -62,7 +62,7 @@ class DistilBertQAPair(PretrainModel):
         token_type_ids=None,
         dec_input_ids=None,
         dec_attention_mask=None,
-        dec_token_type_id=None,
+        dec_token_type_ids=None,
         training=False
     ):
         hidden_state = self.embedding(input_ids=input_ids)
@@ -99,7 +99,7 @@ class DistilBertQAEncoderDecoder(DistilBertQAPair):
         token_type_ids=None,
         dec_input_ids=None,
         dec_attention_mask=None,
-        dec_token_type_id=None,
+        dec_token_type_ids=None,
         training=False
     ):
         embedding = self.embedding(input_ids)

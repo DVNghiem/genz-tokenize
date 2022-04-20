@@ -89,8 +89,6 @@ class MultiHeadSelfAttention(tf.keras.layers.Layer):
            context (bs, q_length, dim)
         """
         bs, q_length, dim = shape_list(query)
-        # assert dim == self.dim, f'Dimensions do not match: {dim} input vs {self.dim} configured'
-        # assert key.size() == value.size()
         dim_per_head = int(self.dim / self.num_attention_heads)
         dim_per_head = tf.cast(dim_per_head, dtype=tf.int32)
 

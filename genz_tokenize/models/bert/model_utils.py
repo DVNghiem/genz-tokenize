@@ -13,6 +13,13 @@ class Config:
 
     @classmethod
     def fromJson(cls, path):
+        '''
+        path: Folder contain config.json\n
+        path:\n
+            |__....\n
+            |__ config.json\n
+            |__....\n           
+        '''
         if not os.path.exists(path):
             raise Exception(f'{os.path.join(path, "config.json")} not found')
         with open(os.path.join(path, 'config.json'), 'r') as f:
@@ -75,13 +82,13 @@ class PretrainModel(tf.keras.Model):
 
     def call(
             self,
-            input_ids=None,
-            attention_mask=None,
-            token_type_ids=None,
-            dec_input_ids=None,
-            dec_attention_mask=None,
-            dec_token_type_id=None,
-            training=False
+            input_ids: tf.Tensor = None,
+            attention_mask: tf.Tensor = None,
+            token_type_ids: tf.Tensor = None,
+            dec_input_ids: tf.Tensor = None,
+            dec_attention_mask: tf.Tensor = None,
+            dec_token_type_ids: tf.Tensor = None,
+            training: bool = False
     ):
         raise NotImplementedError
 
@@ -111,8 +118,22 @@ class PretrainModel(tf.keras.Model):
             'accuracy': self.val_acc_metric()
         }
 
-    def predict(self, x):
-        raise NotImplementedError
+    def predict(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        token_type_ids=None,
+        dec_input_ids=None,
+        dec_attention_mask=None,
+        dec_token_type_ids=None
+    ):
+        pred = self(input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    token_type_ids=token_type_ids,
+                    dec_input_ids=dec_input_ids,
+                    dec_attention_mask=dec_attention_mask,
+                    dec_token_type_ids=dec_token_type_ids)
+        return pred
 
 
 class LossQA(tf.keras.losses.Loss):
@@ -148,7 +169,9 @@ class LossClassification(tf.keras.losses.Loss):
         super().__init__(**kwargs)
 
     def call(self, y, predict):
-        loss_obj = tf.keras.losses.CategoricalCrossentropy()
+        loss_obj = tf.keras.losses.CategoricalCrossentropy(
+            reduction=tf.keras.losses.Reduction.NONE,
+        )
         loss = loss_obj(y, predict)
         return loss
 
