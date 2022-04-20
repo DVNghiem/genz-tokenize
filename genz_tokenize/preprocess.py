@@ -78,3 +78,12 @@ def remove_URL(txt: str):
     '''
     url_pattern = re.compile(r'http\S+')
     return url_pattern.sub(r'', txt)
+
+
+def vncore_tokenize(text, vncore):
+    result = vncore.tokenize(text)
+    text = ' '
+    for i in result:
+        text += ' '.join(i)+' '
+    text = ' '.join(text.split())
+    return text
