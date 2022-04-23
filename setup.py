@@ -35,6 +35,6 @@ setup(
     python_requires=">=3.7",
     include_package_data=True,
     zip_safe=False,
-    keywords='nlp task',
+    keywords='natural language processing',
 
 )

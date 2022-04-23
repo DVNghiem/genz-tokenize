@@ -1,4 +1,3 @@
-from math import perm
 import tensorflow as tf
 import numpy as np
 from .utils import Config, get_initial_params, scaled_dot_product_attention
@@ -110,8 +109,8 @@ class PositionEmbedding(tf.keras.layers.Layer):
         self.pos_emb = tf.keras.layers.Embedding(maxlen, hidden_size)
 
     def call(self, x):
-        maxlen = tf.shape(x)[1]
-        position = tf.range(start=0, limit=maxlen, delta=1)
+        seq_len = tf.shape(x)[1]
+        position = tf.range(start=0, limit=seq_len, delta=1)
         position = self.pos_emb(position)
         x = self.embedding(x)
         x *= tf.math.sqrt(tf.cast(self.hidden_size, tf.float32))
@@ -254,12 +253,7 @@ class DecoderLayer(tf.keras.layers.Layer):
 class Encoder(tf.keras.layers.Layer):
     def __init__(self, config: Config):
         super(Encoder, self).__init__()
-
-        self.d_model = config.hidden_size
         self.num_layers = config.num_hidden_layers
-
-        self.embedding = PositionEmbedding(
-            config.vocab_size, config.hidden_size, config.maxlen)
 
         self.enc_layers = [EncoderLayer(config)
                            for _ in range(config.num_hidden_layers)]
@@ -268,7 +262,6 @@ class Encoder(tf.keras.layers.Layer):
 
     def call(self, x, training, mask):
 
-        x = self.embedding(x)
         x = self.dropout(x, training=training)
         for i in range(self.num_layers):
             x = self.enc_layers[i](x, training, mask)
@@ -282,17 +275,12 @@ class Decoder(tf.keras.layers.Layer):
 
         self.num_layers = config.num_hidden_layers
 
-        self.embedding = PositionEmbedding(
-            config.target_vocab_size, config.hidden_size, config.maxlen)
-
         self.dec_layers = [DecoderLayer(config)
                            for _ in range(self.num_layers)]
         self.dropout = tf.keras.layers.Dropout(config.dropout_rate)
 
     def call(self, x, enc_output, training,
              look_ahead_mask, padding_mask):
-
-        x = self.embedding(x)
 
         x = self.dropout(x, training=training)
 

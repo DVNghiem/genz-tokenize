@@ -155,7 +155,13 @@ class Tokenize(object):
         return mask
 
     def get_token_type(self, token):
-        return [0]*len(token)
+        token[0] = 0
+        token[-1] = 1
+        index = token.index(None)
+        token[index] = 0
+        index = token.index(None)
+        token[index] = 1
+        return token
 
     def get_sequence_id(self, token):
         eos = self.encoder[self.eos_token]
@@ -218,6 +224,11 @@ class Tokenize(object):
         result['attention_mask'] = self.get_atttention_mask(tokens)
         if pair_text is not None:
             result['sequence_id'] = self.get_sequence_id(tokens)
+            result['token_type_ids'] = self.get_token_type(
+                result['sequence_id'])
+            if max_len is not None and padding:
+                result['token_type_ids'] = self.__padding(
+                    result['token_type_ids'], max_len, truncation)
         return result
 
     @ classmethod

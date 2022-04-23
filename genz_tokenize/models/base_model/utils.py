@@ -5,6 +5,7 @@ import numpy as np
 
 class Config:
     def __init__(self,
+                 num_lang=1,
                  vocab_size=48000,
                  target_vocab_size=48000,
                  hidden_size=512,
@@ -24,6 +25,9 @@ class Config:
                  seq2seq_attention='luong',
                  ** kwargs
                  ) -> None:
+        if num_lang < 1 or num_class > 2:
+            raise ValueError('num_lang must be 1 or 2')
+        self.num_lang = num_lang
         self.vocab_size = vocab_size
         self.target_vocab_size = target_vocab_size
         self.hidden_size = hidden_size

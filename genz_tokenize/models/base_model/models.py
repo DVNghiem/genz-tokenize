@@ -1,7 +1,8 @@
+from typing import Any, Union
 import tensorflow as tf
 import numpy as np
 
-from .layers import EncoderSeq2Seq, DecoderSeq2Seq, Encoder, Decoder
+from .layers import EncoderSeq2Seq, DecoderSeq2Seq, Encoder, Decoder, PositionEmbedding
 from .utils import Config, create_look_ahead_mask, create_padding_mask
 
 
@@ -17,7 +18,7 @@ class Seq2Seq(tf.keras.Model):
         self.end_id = config.eos_token_id
         self.maxlen = config.maxlen
 
-    def compile(self, loss, optimizer):
+    def compile(self, loss, optimizer) -> None:
         super().compile()
         self.loss = loss
         self.optimizer = optimizer
@@ -66,9 +67,9 @@ class Seq2Seq(tf.keras.Model):
             loss += self.loss(y[:, t], predictions)
             dec_input = tf.expand_dims(y[:, t], 1)
             self.val_acc.update_state(y[:, t], predictions)
-        return {'val_loss': loss, 'val_acc': self.val_acc.result()}
+        return {'loss': loss, 'accuracy': self.val_acc.result()}
 
-    def predict(self, x):
+    def predict(self, x: Union[tf.Tensor, np.ndarray]) -> np.ndarray:
         bs = x.shape[0]
         result = np.zeros(shape=(bs, self.maxlen))
         hidden = self.initialize_hidden_state(self.enc_unit, bs)
@@ -90,11 +91,28 @@ class Seq2Seq(tf.keras.Model):
     def __str__(self) -> str:
         return 'seq2seq'
 
+    def loadCheckpoint(self, dir: str = 'checkpoint') -> None:
+        checkpoint = tf.train.Checkpoint(
+            model=self)
+        ckpt_manager = tf.train.CheckpointManager(
+            checkpoint, dir, max_to_keep=1)
+        if ckpt_manager.latest_checkpoint:
+            checkpoint.restore(ckpt_manager.latest_checkpoint)
+            print('\nLatest checkpoint restored!!!\n')
+
 
 class Transformer(tf.keras.Model):
     def __init__(self, config: Config):
         super(Transformer, self).__init__()
         self.config = config
+
+        self.embedding_ec = PositionEmbedding(
+            config.vocab_size, config.hidden_size, config.maxlen)
+
+        if config.num_lang == 2:
+            self.embedding_de = PositionEmbedding(
+                config.vocab_size, config.hidden_size, config.maxlen)
+
         self.encoder = Encoder(config)
         self.decoder = Decoder(config)
 
@@ -102,6 +120,11 @@ class Transformer(tf.keras.Model):
 
     def call(self, x):
         inp, tar, training, enc_padding_mask, look_ahead_mask, dec_padding_mask = x
+        inp = self.embedding_ec(inp)
+        if self.config.num_lang == 1:
+            tar = self.embedding_ec(tar)
+        else:
+            tar = self.embedding_de(tar)
         enc_output = self.encoder(inp, training, enc_padding_mask)
         dec_output = self.decoder(
             tar, enc_output, training, look_ahead_mask, dec_padding_mask)
@@ -109,7 +132,7 @@ class Transformer(tf.keras.Model):
 
         return final_output
 
-    def create_masks(self, inp, tar):
+    def create_masks(self, inp, tar) -> Any:
         # Encoder padding mask
         enc_padding_mask = create_padding_mask(inp)
         dec_padding_mask = create_padding_mask(inp)
@@ -118,7 +141,7 @@ class Transformer(tf.keras.Model):
         combined_mask = tf.maximum(dec_target_padding_mask, look_ahead_mask)
         return enc_padding_mask, combined_mask, dec_padding_mask
 
-    def compile(self, loss, optimizer):
+    def compile(self, loss, optimizer) -> None:
         super(Transformer, self).compile()
         self.loss = loss
         self.optimizer = optimizer
@@ -172,11 +195,11 @@ class Transformer(tf.keras.Model):
         loss = self.loss(tar_real, predictions)
 
         self.val_acc.update_state(tar_real, predictions)
-        return {'val_loss': loss, 'val_acc': self.val_acc.result()}
+        return {'loss': loss, 'accuracy': self.val_acc.result()}
 
-    def predict(self, x):
+    def predict(self,  x: Union[tf.Tensor, np.ndarray]) -> np.ndarray:
         bs = x.shape[0]
-        result = np.zeros(shape=(bs, self.config.maxlen))
+        result = np.zeros(shape=(bs, self.config.maxlen), dtype='int32')
         output = tf.expand_dims([self.config.bos_token_id]*bs, axis=-1)
         for i in range(self.config.maxlen):
             enc_padding_mask, combined_mask, dec_padding_mask = self.create_masks(
@@ -193,6 +216,15 @@ class Transformer(tf.keras.Model):
             output = tf.concat([output, predicted_id], axis=-1)
             result[:, i] = predicted_id[:, 0]
         return result
+
+    def loadCheckpoint(self, dir: str = 'checkpoint') -> None:
+        checkpoint = tf.train.Checkpoint(
+            model=self)
+        ckpt_manager = tf.train.CheckpointManager(
+            checkpoint, dir, max_to_keep=1)
+        if ckpt_manager.latest_checkpoint:
+            checkpoint.restore(ckpt_manager.latest_checkpoint)
+            print('\nLatest checkpoint restored!!!\n')
 
     def __str__(self) -> str:
         return 'transformer'
@@ -217,7 +249,7 @@ class TransformerClassification(tf.keras.Model):
         x = self.out(x)
         return x
 
-    def compile(self, loss, optimizer):
+    def compile(self, loss, optimizer) -> None:
         super().compile()
         self.loss = loss
         self.optimizer = optimizer
@@ -251,12 +283,21 @@ class TransformerClassification(tf.keras.Model):
         predict = self.predict(x)
         loss = self.loss(y, predict)
         self.val_acc.update_state(y, predict)
-        return {'val_loss': loss, 'val_acc': self.val_acc.result()}
+        return {'loss': loss, 'accuracy': self.val_acc.result()}
 
-    def predict(self, x):
+    def predict(self, x: Union[tf.Tensor, np.ndarray]) -> np.ndarray:
         mask = create_padding_mask(x)
         predict = self((x, False, mask))
         return predict
+
+    def loadCheckpoint(self, dir: str = 'checkpoint'):
+        checkpoint = tf.train.Checkpoint(
+            model=self)
+        ckpt_manager = tf.train.CheckpointManager(
+            checkpoint, dir, max_to_keep=1)
+        if ckpt_manager.latest_checkpoint:
+            checkpoint.restore(ckpt_manager.latest_checkpoint)
+            print('\nLatest checkpoint restored!!!\n')
 
     def __str__(self) -> str:
         return 'transformer_cls'
