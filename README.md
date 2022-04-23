@@ -1,8 +1,6 @@
 # Genz Tokenize
 
-## Installation:
-
-    pip install genz-tokenize
+[![PyPI](https://img.shields.io/pypi/v/genz-tokenize.svg)](https://pypi.org/project/genz-tokenize)
 
 ## Using for tokenize
 

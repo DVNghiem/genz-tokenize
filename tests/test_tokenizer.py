@@ -43,4 +43,4 @@ trainer = Trainer(model=model, args=args,
                   data_train=dataset_train, data_eval=dataset_eval)
 trainer.train()
 trainer.save()
-print(model.predict(x))
+print(model.predict(x[0:1, :]))

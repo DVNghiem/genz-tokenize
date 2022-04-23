@@ -9,6 +9,7 @@ from .utils import Config, create_look_ahead_mask, create_padding_mask
 class Seq2Seq(tf.keras.Model):
     def __init__(self, config: Config):
         super().__init__()
+        self.config = config
         self.encoder = EncoderSeq2Seq(config)
         self.decoder = DecoderSeq2Seq(config)
 
@@ -71,7 +72,7 @@ class Seq2Seq(tf.keras.Model):
 
     def predict(self, x: Union[tf.Tensor, np.ndarray]) -> np.ndarray:
         bs = x.shape[0]
-        result = np.zeros(shape=(bs, self.maxlen))
+        result = []
         hidden = self.initialize_hidden_state(self.enc_unit, bs)
         enc_out, hidden = self.encoder(x, hidden)
         dec_input = tf.expand_dims([self.start_id]*bs, -1)
@@ -81,7 +82,9 @@ class Seq2Seq(tf.keras.Model):
                                                enc_out)
 
             predicted_id = tf.argmax(predictions, axis=-1).numpy()
-            result[:, i] = predicted_id
+            if predicted_id.numpy()[0, 0] == self.config.eos_token_id:
+                break
+            result.append(predicted_id.numpy()[0, 0])
             dec_input = tf.expand_dims(predicted_id, -1)
         return result
 
@@ -198,9 +201,8 @@ class Transformer(tf.keras.Model):
         return {'loss': loss, 'accuracy': self.val_acc.result()}
 
     def predict(self,  x: Union[tf.Tensor, np.ndarray]) -> np.ndarray:
-        bs = x.shape[0]
-        result = np.zeros(shape=(bs, self.config.maxlen), dtype='int32')
-        output = tf.expand_dims([self.config.bos_token_id]*bs, axis=-1)
+        result = []
+        output = tf.expand_dims([self.config.bos_token_id], axis=-1)
         for i in range(self.config.maxlen):
             enc_padding_mask, combined_mask, dec_padding_mask = self.create_masks(
                 x, output)
@@ -214,7 +216,9 @@ class Transformer(tf.keras.Model):
             predicted_id = tf.cast(
                 tf.argmax(predictions, axis=-1), dtype=tf.int32)
             output = tf.concat([output, predicted_id], axis=-1)
-            result[:, i] = predicted_id[:, 0]
+            if predicted_id.numpy()[0, 0] == self.config.eos_token_id:
+                break
+            result.append(predicted_id.numpy()[0, 0])
         return result
 
     def loadCheckpoint(self, dir: str = 'checkpoint') -> None:
