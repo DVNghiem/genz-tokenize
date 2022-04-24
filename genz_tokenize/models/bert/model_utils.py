@@ -2,10 +2,19 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 import os
 import json
+from typing import Union
+import numpy as np
 
 
 class Config:
-    def saveJson(self, path):
+    def saveJson(self, path: str) -> None:
+        """
+        Save attribute config to json file
+        Arg:
+            path |`String`:
+                Directory to folder contain file config. Default name: config.json
+                Ex: /home/username/config/
+        """
         if not os.path.exists(path=path):
             os.mkdir(path=path)
         with open(os.path.join(path, 'config.json'), 'w') as f:
@@ -14,11 +23,13 @@ class Config:
     @classmethod
     def fromJson(cls, path):
         '''
-        path: Folder contain config.json\n
-        path:\n
-            |__....\n
-            |__ config.json\n
-            |__....\n           
+        Restore value to attributes
+        Arg:
+            path |`String`: 
+                Directory to folder contain file config. Default name: config.json
+                Ex: /home/username/config/
+        Return:
+            instance Config      
         '''
         if not os.path.exists(path):
             raise Exception(f'{os.path.join(path, "config.json")} not found')
@@ -29,34 +40,73 @@ class Config:
         return cls
 
 
-def save_checkpoint(model, optimizer: tf.keras.optimizers.Optimizer = None, checkpoint_dir: str = None):
-    checkpoint = tf.train.Checkpoint(
-        model=model, optimizer=optimizer)
+def save_checkpoint(
+    model,
+    optimizer: tf.keras.optimizers.Optimizer = None,
+    checkpoint_dir: str = None
+):
+    """
+    Restore weight to model
+    Args:
+        model |`tf.keras.Model`:
+            # 
+        optimizer | `tf.keras.optimizers.Optimizer`:
+            Save optimizer
+        checkpoint_dir| `String`:
+            Directory to folder contain checkpoint
+    """
+    if optimizer:
+        checkpoint = tf.train.Checkpoint(
+            model=model, optimizer=optimizer)
+    else:
+        checkpoint = tf.train.Checkpoint(
+            model=model)
     ckpt_manager = tf.train.CheckpointManager(
         checkpoint, checkpoint_dir, max_to_keep=5)
     ckpt_manager.save()
 
 
 def load_checkpoint(model, optimizer: tf.keras.optimizers.Optimizer = None, checkpoint_dir: str = None):
+    """
+    Restore weight to model
+    Args:
+        model |`tf.keras.Model`:
+            # Initalize model keras. Checkpoint will restore to it
+        optimizer | `tf.keras.optimizers.Optimizer`:
+            Save optimizer
+        checkpoint_dir| `String`:
+            Directory to folder contain checkpoint
+    """
     if optimizer:
         checkpoint = tf.train.Checkpoint(
             model=model,  optimizer=optimizer)
     else:
         checkpoint = tf.train.Checkpoint(
-            model=model,  optimizer=optimizer)
+            model=model)
     ckpt_manager = tf.train.CheckpointManager(
         checkpoint, checkpoint_dir, max_to_keep=5)
     if ckpt_manager.latest_checkpoint:
-        checkpoint.restore(ckpt_manager.latest_checkpoint)
+        checkpoint.restore(ckpt_manager.latest_checkpoint).expect_partial()
         print('\nLatest checkpoint restored!!!\n')
 
 
 class PretrainModel(tf.keras.Model):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
     @classmethod
     def fromPretrain(cls, config: Config, checkpoint_dir):
+        """
+        Restore model
+        Args:
+            config |`Config`:
+                from genz_tokenize.models.bert.model_utils import Config
+                Hyper parameters for model
+            checkpoint_dir |`String`:
+                Directory to folder checkpoint
+        Return:
+            model |`tf.keras.Model`
+        """
         model = cls(config)
         load_checkpoint(model, optimizer=None, checkpoint_dir=checkpoint_dir)
         return model
@@ -120,13 +170,13 @@ class PretrainModel(tf.keras.Model):
 
     def predict(
         self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        dec_input_ids=None,
-        dec_attention_mask=None,
-        dec_token_type_ids=None
-    ):
+        input_ids: Union[tf.Tensor, np.ndarray] = None,
+        attention_mask: Union[tf.Tensor, np.ndarray] = None,
+        token_type_ids: Union[tf.Tensor, np.ndarray] = None,
+        dec_input_ids: Union[tf.Tensor, np.ndarray] = None,
+        dec_attention_mask: Union[tf.Tensor, np.ndarray] = None,
+        dec_token_type_ids: Union[tf.Tensor, np.ndarray] = None
+    ) -> tf.Tensor:
         pred = self(input_ids=input_ids,
                     attention_mask=attention_mask,
                     token_type_ids=token_type_ids,
@@ -139,26 +189,28 @@ class PretrainModel(tf.keras.Model):
 class LossQA(tf.keras.losses.Loss):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-
-    def call(self, y, predict):
-        loss_obj = tf.keras.losses.SparseCategoricalCrossentropy(
+        self.loss_obj = tf.keras.losses.SparseCategoricalCrossentropy(
             from_logits=True,
             reduction='none',
         )
-        loss_start = loss_obj(y[:, 0:1], predict[0])
-        loss_end = loss_obj(y[:, 1:], predict[1])
+
+    def call(self, y, predict):
+
+        loss_start = self.loss_obj(y[:, 0:1], predict[0])
+        loss_end = self.loss_obj(y[:, 1:], predict[1])
         return (loss_start+loss_end)/2
 
 
 class LossSeq2Seq(tf.keras.losses.Loss):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
+            from_logits=True, reduction='none')
 
     def call(self, y, predict):
-        loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
-            from_logits=True, reduction='none')
+
         mask = tf.math.logical_not(tf.math.equal(y, 0))
-        loss_ = loss_object(y, predict)
+        loss_ = self.loss_object(y, predict)
         mask = tf.cast(mask, dtype=loss_.dtype)
         loss_ *= mask
         return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
@@ -167,12 +219,13 @@ class LossSeq2Seq(tf.keras.losses.Loss):
 class LossClassification(tf.keras.losses.Loss):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-
-    def call(self, y, predict):
-        loss_obj = tf.keras.losses.CategoricalCrossentropy(
+        self.loss_obj = tf.keras.losses.CategoricalCrossentropy(
             reduction=tf.keras.losses.Reduction.NONE,
         )
-        loss = loss_obj(y, predict)
+
+    def call(self, y, predict):
+
+        loss = self.loss_obj(y, predict)
         return loss
 
 

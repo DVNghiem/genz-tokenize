@@ -16,6 +16,7 @@ config.vocab_size = 5
 config.dim = 10
 config.hidden_dim = 5
 config.num_labels = 2
+config.max_position_embedding = 12
 
 dataset = DataCollection(
     input_ids=x,
@@ -33,6 +34,9 @@ model = RoBertaQAEncoderDecoder(config)
 arg = TrainArg(epochs=2, batch_size=2, learning_rate=1e-2)
 trainer = Trainner(model, arg, tf_dataset)
 trainer.train()
+
+# model = RoBertaQAEncoderDecoder.fromPretrain(
+#     config, checkpoint_dir='checkpoint')
 
 print(model.predict(input_ids=x, attention_mask=mask,
       dec_input_ids=x, dec_attention_mask=mask))

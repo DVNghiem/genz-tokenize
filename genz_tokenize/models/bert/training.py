@@ -27,6 +27,17 @@ class Trainner:
         dataset_val: tf.data.Dataset = None,
 
     ) -> None:
+        """
+        Args:
+            model |`PretrainModel`:
+            arg |`TrainArg`:
+                Config parameter for training
+            dataset_train |`tf.data.Dataset`:
+                dataset for training, it is created from DataColection
+            dataset_val |`tf.data.Dataset`:
+                dataset for validation in process training. Default = None
+                if it equal None, model can't validation
+        """
         self.model = model
         self.dataset_train = dataset_train
         self.dataset_val = dataset_val

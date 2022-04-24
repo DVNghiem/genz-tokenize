@@ -4,18 +4,18 @@ from genz_tokenize.models.bert.model_utils import Config
 class DistilBertConfig(Config):
     def __init__(
         self,
-        vocab_size=33333,
-        hidden_dim=256,
-        num_hidden_layers=8,
-        num_attention_heads=8,
-        max_position_embeddings=1024,
-        num_labels=2,
-        initializer_range=0.02,
-        dropout=0.1,
-        attention_dropout=0.2,
-        epsilon=1e-6,
-        dim=1024,
-        initial_range=0.02,
+        vocab_size: int = 33333,
+        hidden_dim: int = 256,
+        num_hidden_layers: int = 8,
+        num_attention_heads: int = 8,
+        max_position_embeddings: int = 1024,
+        num_labels: int = 2,
+        initializer_range: float = 0.02,
+        dropout: float = 0.1,
+        attention_dropout: float = 0.2,
+        epsilon: float = 1e-6,
+        dim: int = 1024,
+        initial_range: float = 0.02,
     ) -> None:
         self.vocab_size = vocab_size
         self.hidden_dim = hidden_dim

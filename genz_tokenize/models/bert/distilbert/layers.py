@@ -34,7 +34,7 @@ class Embeddings(tf.keras.layers.Layer):
 
         super().build(input_shape)
 
-    def call(self, input_ids=None, training=False):
+    def call(self, input_ids: tf.Tensor = None, training=False):
 
         if input_ids is not None:
             inputs_embeds = tf.gather(params=self.weight, indices=input_ids)
@@ -78,7 +78,7 @@ class MultiHeadSelfAttention(tf.keras.layers.Layer):
             config.dim, kernel_initializer=get_initial_params(config), name="out_lin"
         )
 
-    def call(self, query, key, value, mask, training=False):
+    def call(self, query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, mask: tf.Tensor, training=False):
         """
         Parameters:
             query: tf.Tensor(bs, seq_length, dim)

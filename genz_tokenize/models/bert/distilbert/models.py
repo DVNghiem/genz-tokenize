@@ -25,13 +25,13 @@ class DistilBertSeqClassification(PretrainModel):
 
     def call(
         self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        dec_input_ids=None,
-        dec_attention_mask=None,
-        dec_token_type_ids=None,
-        training=False
+        input_ids: tf.Tensor = None,
+        attention_mask: tf.Tensor = None,
+        token_type_ids: tf.Tensor = None,
+        dec_input_ids: tf.Tensor = None,
+        dec_attention_mask: tf.Tensor = None,
+        dec_token_type_ids: tf.Tensor = None,
+            training: bool = False
     ):
         embedding = self.embedding(input_ids=input_ids)
         bert_output = self.distil(
@@ -57,13 +57,13 @@ class DistilBertQAPair(PretrainModel):
 
     def call(
         self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        dec_input_ids=None,
-        dec_attention_mask=None,
-        dec_token_type_ids=None,
-        training=False
+        input_ids: tf.Tensor = None,
+        attention_mask: tf.Tensor = None,
+        token_type_ids: tf.Tensor = None,
+        dec_input_ids: tf.Tensor = None,
+        dec_attention_mask: tf.Tensor = None,
+        dec_token_type_ids: tf.Tensor = None,
+        training: bool = False
     ):
         hidden_state = self.embedding(input_ids=input_ids)
         bert_output = self.encoder(
@@ -94,13 +94,13 @@ class DistilBertQAEncoderDecoder(DistilBertQAPair):
 
     def call(
         self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        dec_input_ids=None,
-        dec_attention_mask=None,
-        dec_token_type_ids=None,
-        training=False
+        input_ids: tf.Tensor = None,
+        attention_mask: tf.Tensor = None,
+        token_type_ids: tf.Tensor = None,
+        dec_input_ids: tf.Tensor = None,
+        dec_attention_mask: tf.Tensor = None,
+        dec_token_type_ids: tf.Tensor = None,
+        training: bool = False
     ):
         embedding = self.embedding(input_ids)
         enc_output = self.encoder(

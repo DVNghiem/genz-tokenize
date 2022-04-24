@@ -1,5 +1,5 @@
 from genz_tokenize import Tokenize
-from genz_tokenize import Tokenize, TokenizeForBert
+from genz_tokenize import Tokenize
 from genz_tokenize.preprocess import remove_emoji
 from genz_tokenize.models.base_model.utils import Config
 from genz_tokenize.models.base_model.models import Seq2Seq, Transformer, TransformerClassification
@@ -7,7 +7,7 @@ from genz_tokenize.models.base_model.training import TrainArgument, Trainer
 
 import tensorflow as tf
 
-tokenize = TokenizeForBert()
+tokenize = Tokenize()
 
 config = Config()
 config.vocab_size = 10

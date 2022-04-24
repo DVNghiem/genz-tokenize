@@ -1,15 +1,17 @@
 import tensorflow as tf
+from typing import Union
+import numpy as np
 
 
 class DataCollection:
     def __init__(
         self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        dec_input_ids=None,
-        dec_attention_mask=None,
-        dec_token_type_ids=None,
+        input_ids: Union[tf.Tensor, np.ndarray] = None,
+        attention_mask: Union[tf.Tensor, np.ndarray] = None,
+        token_type_ids: Union[tf.Tensor, np.ndarray] = None,
+        dec_input_ids: Union[tf.Tensor, np.ndarray] = None,
+        dec_attention_mask: Union[tf.Tensor, np.ndarray] = None,
+        dec_token_type_ids: Union[tf.Tensor, np.ndarray] = None,
         y=None
     ) -> None:
         super().__init__()
@@ -24,8 +26,11 @@ class DataCollection:
             raise Exception('y (label) is required')
 
     def to_tf_dataset(
-        self, batch_size
+        self, batch_size: int = 32
     ) -> tf.data.Dataset:
+        """
+        Covert data to Dataset to feed to Trainer
+        """
         lables = []
         values = []
         for k, v in self.__dict__.items():
