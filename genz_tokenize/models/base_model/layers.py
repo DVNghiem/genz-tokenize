@@ -47,8 +47,7 @@ class BahdanauAttention(tf.keras.layers.Layer):
 class LuongAttention(tf.keras.layers.Layer):
     def __init__(self, config: Config) -> None:
         super().__init__()
-        self.w1 = tf.keras.layers.Dense(config.units)
-        self.w2 = tf.keras.layers.Dense(config.units)
+        self.w = tf.keras.layers.Dense(config.units)
 
     def call(self, state: tf.Tensor, enc_output: tf.Tensor):
         '''
@@ -58,7 +57,7 @@ class LuongAttention(tf.keras.layers.Layer):
         value = enc_output
         state = tf.expand_dims(state, axis=1)  # batch-size, 1, units
         # batch-size, units, maxlen
-        enc_output = tf.transpose(enc_output, perm=[0, 2, 1])
+        enc_output = tf.transpose(self.w(enc_output), perm=[0, 2, 1])
 
         score = tf.transpose(tf.matmul(state, enc_output), perm=[
                              0, 2, 1])  # batch-size, maxlen, 1
