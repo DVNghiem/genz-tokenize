@@ -1,8 +1,6 @@
 import re
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 import os
-import numpy as np
-import pickle
 
 
 class Tokenize(object):
@@ -102,7 +100,7 @@ class Tokenize(object):
         word = word[:-4]
         return word
 
-    def __tokenize(self, text, return_offset):
+    def __tokenize(self, text: str, return_offset: bool):
         split_tokens = []
         offset = [(0, 0)]
         words = re.findall(r"\S+\n?", text)  # tách từ ra
@@ -278,15 +276,3 @@ def get_pairs(word):
 
     pairs = set(pairs)
     return pairs
-
-
-def get_embedding_matrix():
-    this_dir, _ = os.path.split(__file__)
-    with open(os.path.join(this_dir, 'data', 'emb_1.pkl'), 'rb') as f:
-        emb_1 = pickle.load(f)
-    with open(os.path.join(this_dir, 'data', 'emb_2.pkl'), 'rb') as f:
-        emb_2 = pickle.load(f)
-    with open(os.path.join(this_dir, 'data', 'emb_3.pkl'), 'rb') as f:
-        emb_3 = pickle.load(f)
-    embedding_matrix = np.vstack([emb_1, emb_2, emb_3])
-    return embedding_matrix

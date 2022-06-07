@@ -18,13 +18,6 @@
     tokenize = Tokenize.fromFile('vocab.txt','bpe.codes')
 ```
 
-## Embedding matrix from fasttext
-
-```python
-    from genz_tokenize import get_embedding_matrix
-    embedding_matrix = get_embedding_matrix()
-```
-
 ## Preprocessing data
 
 ```python

@@ -1,5 +1,5 @@
 import string
-import regex as re
+import re
 
 
 def remove_html(txt: str):
